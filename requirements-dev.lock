@@ -1,0 +1,5 @@
+# Top-level development tool versions used by CI. Regenerate intentionally when upgrading tooling.
+cryptography==46.0.7
+mypy==2.4.0
+pytest==8.4.2
+ruff==0.17.1

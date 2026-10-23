@@ -8,14 +8,21 @@ version = "0.1.0.dev0"
 description = "Local-first creator-directed generative AI framework"
 requires-python = ">=3.10"
 license = "Apache-2.0"
-dependencies = []
+dependencies = ["cryptography>=42,<47"]
 
 [project.optional-dependencies]
 text = ["transformers>=4.46,<5", "torch>=2.2", "huggingface_hub>=0.26,<1"]
-dev = ["pytest>=8", "ruff>=0.7"]
+dev = ["pytest>=8", "ruff>=0.7", "mypy>=1.10"]
 
 [project.scripts]
 creator-ai = "creator_ai.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.ruff]
+line-length = 120
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
