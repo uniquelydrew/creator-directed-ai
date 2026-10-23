@@ -18,8 +18,10 @@ The following performs creator registration, authorization, policy-gated generat
 
 ```bash
 creator-ai "A forest at dawn" --workflow --domain visual --workspace .creator-ai \
-  --key creator-key.pem --passphrase change-me --title "Dawn study" --output dawn.svg
+  --key creator-key.pem --title "Dawn study" --output dawn.svg
 ```
+
+The CLI requests the key passphrase interactively; it does not accept it as a command-line argument.
 
 The same command supports `writing`, `music`, and `voice`. Its deterministic outputs are text, SVG, MIDI, and WAV respectively; they are reference demonstrations rather than trained creator models.
 

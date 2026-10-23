@@ -24,7 +24,7 @@ class _OfflineBackend:
 class ReferenceBackend(_OfflineBackend):
     """Deterministic writing baseline with no model weights or network access."""
 
-    model_id = "deterministic-v1"
+    model_id = "local/deterministic-v1"
 
     def capabilities(self) -> dict[str, Any]:
         return {"domains": ["writing"], "offline": True, "media_type": "text/plain"}
@@ -37,7 +37,7 @@ class ReferenceBackend(_OfflineBackend):
 
 
 class SvgBackend(_OfflineBackend):
-    model_id = "deterministic-svg-v1"
+    model_id = "local/deterministic-svg-v1"
 
     def capabilities(self) -> dict[str, Any]:
         return {"domains": ["visual"], "offline": True, "media_type": "image/svg+xml"}
@@ -61,7 +61,7 @@ class SvgBackend(_OfflineBackend):
 
 
 class MidiBackend(_OfflineBackend):
-    model_id = "deterministic-midi-v1"
+    model_id = "local/deterministic-midi-v1"
 
     def capabilities(self) -> dict[str, Any]:
         return {"domains": ["music"], "offline": True, "media_type": "audio/midi"}
@@ -85,7 +85,7 @@ class MidiBackend(_OfflineBackend):
 
 
 class WavBackend(_OfflineBackend):
-    model_id = "deterministic-wav-v1"
+    model_id = "local/deterministic-wav-v1"
 
     def capabilities(self) -> dict[str, Any]:
         return {"domains": ["voice"], "offline": True, "media_type": "audio/wav"}

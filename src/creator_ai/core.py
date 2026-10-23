@@ -106,6 +106,7 @@ class GenerationRecord:
     record_id: str
     creator_id: str
     authorization_id: str
+    authorization_hash: str
     domain: str
     backend: str
     model_id: str
@@ -137,6 +138,8 @@ class EvaluationResult:
 class ApprovalRecord:
     approval_id: str
     generation_id: str
+    generation_hash: str
+    output_hash: str
     creator_id: str
     accepted: bool
     signature: str
@@ -182,6 +185,25 @@ class RevocationRecord:
     def unsigned_dict(self) -> dict[str, Any]:
         data = asdict(self)
         data.pop("signature")
+        return data
+
+    def to_dict(self) -> dict[str, Any]:
+        return {**self.unsigned_dict(), "signature": self.signature}
+
+
+@dataclass(frozen=True)
+class RevocationState:
+    creator_id: str
+    sequence: int
+    revocation_hashes: tuple[str, ...]
+    previous_hash: str | None
+    signature: str
+    version: str = "1"
+
+    def unsigned_dict(self) -> dict[str, Any]:
+        data = asdict(self)
+        data.pop("signature")
+        data["revocation_hashes"] = list(self.revocation_hashes)
         return data
 
     def to_dict(self) -> dict[str, Any]:

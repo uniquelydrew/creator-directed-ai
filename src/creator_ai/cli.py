@@ -1,5 +1,6 @@
 """Offline CLI for model provisioning, validation, and creator workflow demos."""
 import argparse
+import getpass
 import json
 from pathlib import Path
 
@@ -26,25 +27,27 @@ def _registry(path: str) -> int:
 
 def _workflow(args: argparse.Namespace) -> None:
     key_path = Path(args.key)
+    passphrase = getpass.getpass("Creator key passphrase: ")
     if key_path.exists():
-        private = load_private_key(key_path, args.passphrase)
+        private = load_private_key(key_path, passphrase)
         public = private.public_key().public_bytes_raw().hex()
         import base64
         identity = CreatorIdentity(args.creator_id, args.creator_name, base64.b64encode(bytes.fromhex(public)).decode())
     else:
-        created = create_key(key_path, args.passphrase)
+        created = create_key(key_path, passphrase)
         identity = CreatorIdentity(args.creator_id, args.creator_name, created.public_key)
-        private = load_private_key(key_path, args.passphrase)
+        private = load_private_key(key_path, passphrase)
     workspace = CreatorWorkspace(args.workspace)
     workspace.register_creator(identity)
     authorization = create_authorization(identity, private, (args.domain,), ("generate", "export", "approve"))
-    workspace.store.put_json(authorization.to_dict())
+    authorization_ref = workspace.store_authorization(authorization)
     specification = CreativeSpecification(args.domain, args.title, json.loads(args.constraints))
-    generation, output = workspace.generate(identity, authorization, specification, GenerationRequest(args.prompt, args.seed, specification))
-    workspace.evaluate(generation, True, "offline deterministic demonstration")
-    approval = workspace.approve(generation, authorization, identity, private)
+    generation_ref, output = workspace.generate(identity, authorization_ref.digest, specification, GenerationRequest(args.prompt, args.seed, specification), ModelRegistry.load(args.registry))
+    generation = workspace._load_generation(generation_ref.digest)
+    workspace.evaluate(generation_ref.digest, True, "offline deterministic demonstration")
+    approval_ref = workspace.approve(generation_ref.digest, authorization_ref.digest, identity, private)
     destination = Path(args.output) if args.output else Path(args.workspace) / f"{generation.record_id}.{ {'visual':'svg','music':'mid','voice':'wav','writing':'txt'}[args.domain] }"
-    workspace.export(generation, authorization, approval, identity, destination)
+    workspace.export(generation_ref.digest, authorization_ref.digest, approval_ref.digest, identity, destination)
     print(json.dumps({"generation_id": generation.record_id, "output_hash": output.digest, "output": str(destination)}, sort_keys=True))
 
 
@@ -58,7 +61,6 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--workflow", action="store_true", help="Run a signed, policy-gated offline workflow")
     parser.add_argument("--workspace", default=".creator-ai", help="Local immutable artifact store")
     parser.add_argument("--key", default="creator-key.pem", help="Encrypted Ed25519 private-key file")
-    parser.add_argument("--passphrase", default="", help="Key passphrase; prefer supplying from a secure wrapper")
     parser.add_argument("--creator-id", default="demo")
     parser.add_argument("--creator-name", default="Demo creator")
     parser.add_argument("--title", default="Untitled specification")

@@ -10,6 +10,46 @@
       "license_url": "https://huggingface.co/HuggingFaceTB/SmolLM2-135M-Instruct",
       "attribution": "HuggingFaceTB SmolLM2-135M-Instruct",
       "requires_consent": false
+    },
+    {
+      "model_id": "local/deterministic-v1",
+      "revision": "0000000000000000000000000000000000000000",
+      "license_id": "Apache-2.0",
+      "domains": ["writing"],
+      "source_url": "https://github.com/uniquelydrew/creator-directed-ai",
+      "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+      "attribution": "Creator Directed AI deterministic writing reference backend",
+      "requires_consent": false
+    },
+    {
+      "model_id": "local/deterministic-svg-v1",
+      "revision": "0000000000000000000000000000000000000000",
+      "license_id": "Apache-2.0",
+      "domains": ["visual"],
+      "source_url": "https://github.com/uniquelydrew/creator-directed-ai",
+      "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+      "attribution": "Creator Directed AI deterministic SVG reference backend",
+      "requires_consent": false
+    },
+    {
+      "model_id": "local/deterministic-midi-v1",
+      "revision": "0000000000000000000000000000000000000000",
+      "license_id": "Apache-2.0",
+      "domains": ["music"],
+      "source_url": "https://github.com/uniquelydrew/creator-directed-ai",
+      "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+      "attribution": "Creator Directed AI deterministic MIDI reference backend",
+      "requires_consent": false
+    },
+    {
+      "model_id": "local/deterministic-wav-v1",
+      "revision": "0000000000000000000000000000000000000000",
+      "license_id": "Apache-2.0",
+      "domains": ["voice"],
+      "source_url": "https://github.com/uniquelydrew/creator-directed-ai",
+      "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+      "attribution": "Creator Directed AI deterministic WAV reference backend",
+      "requires_consent": false
     }
   ]
 }
