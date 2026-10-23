@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "creator-directed-ai"
+version = "0.1.0.dev0"
+description = "Local-first creator-directed generative AI framework"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+dependencies = []
+
+[project.optional-dependencies]
+text = ["transformers>=4.46,<5", "torch>=2.2", "huggingface_hub>=0.26,<1"]
+dev = ["pytest>=8", "ruff>=0.7"]
+
+[project.scripts]
+creator-ai = "creator_ai.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
