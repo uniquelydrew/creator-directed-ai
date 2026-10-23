@@ -130,7 +130,8 @@ class TransformersTextBackend:
         try:
             # Learned text generation is an optional adapter and is not part of
             # the deterministic offline CI dependency set.
-            from transformers import pipeline  # type: ignore[import-not-found]
+            from importlib import import_module
+            pipeline = import_module("transformers").pipeline
         except ImportError as exc:
             raise RuntimeError("Install with: pip install 'creator-directed-ai[text]'") from exc
         local_path = find_cached_text_model()

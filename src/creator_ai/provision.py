@@ -7,7 +7,8 @@ def provision_text_model(cache_dir: str | None = None) -> str:
     try:
         # The text backend is optional; CI deliberately validates the local-first
         # baseline without installing its network/model dependencies.
-        from huggingface_hub import snapshot_download  # type: ignore[import-not-found]
+        from importlib import import_module
+        snapshot_download = import_module("huggingface_hub").snapshot_download
     except ImportError as exc:
         raise RuntimeError("Install optional text dependencies first") from exc
     return str(
@@ -25,7 +26,8 @@ def find_cached_text_model(cache_dir: str | None = None) -> str:
     try:
         # See provision_text_model: this optional dependency is absent from the
         # deterministic, offline CI environment.
-        from huggingface_hub import snapshot_download
+        from importlib import import_module
+        snapshot_download = import_module("huggingface_hub").snapshot_download
     except ImportError as exc:
         raise RuntimeError("Install optional text dependencies first") from exc
     try:

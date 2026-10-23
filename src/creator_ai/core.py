@@ -117,6 +117,9 @@ class GenerationRecord:
     policy_reasons: tuple[str, ...]
     seed: int
     parent_hashes: tuple[str, ...] = ()
+    model_manifest_hash: str = ""
+    runtime_version: str = ""
+    worker_metadata: dict[str, Any] = field(default_factory=dict)
     version: str = "1"
 
     def to_dict(self) -> dict[str, Any]:

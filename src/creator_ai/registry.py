@@ -24,6 +24,12 @@ class ModelRecord:
     attribution: str = ""
     requires_consent: bool = False
     metadata: dict[str, Any] = field(default_factory=dict)
+    adapter_id: str = ""
+    expected_manifest_hash: str = ""
+    runtime_version: str = ""
+    hardware: str = ""
+    media_type: str = ""
+    requires_identity_consent: bool = False
 
     @classmethod
     def from_dict(cls, raw: dict[str, Any]) -> "ModelRecord":
@@ -31,7 +37,9 @@ class ModelRecord:
         missing = required - raw.keys()
         if missing:
             raise RegistryError("Missing required fields: " + ", ".join(sorted(missing)))
-        unknown = set(raw) - (required | {"attribution", "requires_consent", "metadata"})
+        optional = {"attribution", "requires_consent", "metadata", "adapter_id", "expected_manifest_hash",
+                    "runtime_version", "hardware", "media_type", "requires_identity_consent"}
+        unknown = set(raw) - (required | optional)
         if unknown:
             raise RegistryError("Unknown fields: " + ", ".join(sorted(unknown)))
         if not isinstance(raw["domains"], list) or not raw["domains"] or not all(isinstance(x, str) for x in raw["domains"]):
@@ -48,6 +56,9 @@ class ModelRecord:
                 attribution=raw.get("attribution", ""),
                 requires_consent=raw.get("requires_consent", False),
                 metadata=raw.get("metadata", {}),
+                adapter_id=raw.get("adapter_id", ""), expected_manifest_hash=raw.get("expected_manifest_hash", ""),
+                runtime_version=raw.get("runtime_version", ""), hardware=raw.get("hardware", ""),
+                media_type=raw.get("media_type", ""), requires_identity_consent=raw.get("requires_identity_consent", False),
             )
         except (TypeError, KeyError) as exc:
             raise RegistryError("Invalid model record types") from exc
@@ -67,6 +78,20 @@ class ModelRecord:
             raise RegistryError("source_url and license_url must use HTTPS")
         if not isinstance(self.attribution, str):
             raise RegistryError("attribution must be text")
+        if not all(isinstance(value, str) for value in (self.adapter_id, self.expected_manifest_hash, self.runtime_version, self.hardware, self.media_type)):
+            raise RegistryError("adapter metadata must be text")
+        if self.expected_manifest_hash and not re.fullmatch(r"[0-9a-f]{64}", self.expected_manifest_hash):
+            raise RegistryError("expected_manifest_hash must be a SHA-256 digest")
+        if not isinstance(self.requires_identity_consent, bool):
+            raise RegistryError("requires_identity_consent must be a boolean")
+
+    def adapter_dict(self) -> dict[str, Any]:
+        """Stable, minimal model metadata supplied to an isolated worker."""
+        if not self.adapter_id:
+            raise RegistryError("model has no learned adapter")
+        return {"model_id": self.model_id, "revision": self.revision, "adapter_id": self.adapter_id,
+                "runtime_version": self.runtime_version, "hardware": self.hardware, "media_type": self.media_type,
+                "requires_identity_consent": self.requires_identity_consent}
 
 
 class ModelRegistry:
