@@ -1,6 +1,7 @@
 import pytest
-from creator_ai.core import CreatorManifest, GenerationRequest
+
 from creator_ai.backends import ReferenceBackend
+from creator_ai.core import CreatorManifest, GenerationRequest
 
 
 @pytest.mark.parametrize("domain", ["visual", "writing", "music", "voice"])
