@@ -1,43 +1,86 @@
-"""Command line demo, model provisioning and registry validation."""
+"""Offline CLI for model provisioning, validation, and creator workflow demos."""
 import argparse
+import json
+from pathlib import Path
 
+from .auth import create_authorization, create_key, load_private_key
 from .backends import ReferenceBackend, TransformersTextBackend
-from .core import CreatorManifest, GenerationRequest
+from .core import CreativeSpecification, CreatorIdentity, CreatorManifest, GenerationRequest
 from .licensing import LicensePolicy
 from .provision import provision_text_model
 from .registry import ModelRegistry
+from .workflow import CreatorWorkspace
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Creator-directed AI prototype")
+def _registry(path: str) -> int:
+    rejected = 0
+    for model in ModelRegistry.load(path).list():
+        for domain in model.domains:
+            decision = LicensePolicy().evaluate(model, domain=domain)
+            print(f"{model.model_id} [{domain}]: {'allowed' if decision.allowed else 'denied'}")
+            for reason in decision.reasons:
+                print(f"  - {reason}")
+            rejected += not decision.allowed
+    return rejected
+
+
+def _workflow(args: argparse.Namespace) -> None:
+    key_path = Path(args.key)
+    if key_path.exists():
+        private = load_private_key(key_path, args.passphrase)
+        public = private.public_key().public_bytes_raw().hex()
+        import base64
+        identity = CreatorIdentity(args.creator_id, args.creator_name, base64.b64encode(bytes.fromhex(public)).decode())
+    else:
+        created = create_key(key_path, args.passphrase)
+        identity = CreatorIdentity(args.creator_id, args.creator_name, created.public_key)
+        private = load_private_key(key_path, args.passphrase)
+    workspace = CreatorWorkspace(args.workspace)
+    workspace.register_creator(identity)
+    authorization = create_authorization(identity, private, (args.domain,), ("generate", "export", "approve"))
+    workspace.store.put_json(authorization.to_dict())
+    specification = CreativeSpecification(args.domain, args.title, json.loads(args.constraints))
+    generation, output = workspace.generate(identity, authorization, specification, GenerationRequest(args.prompt, args.seed, specification))
+    workspace.evaluate(generation, True, "offline deterministic demonstration")
+    approval = workspace.approve(generation, authorization, identity, private)
+    destination = Path(args.output) if args.output else Path(args.workspace) / f"{generation.record_id}.{ {'visual':'svg','music':'mid','voice':'wav','writing':'txt'}[args.domain] }"
+    workspace.export(generation, authorization, approval, identity, destination)
+    print(json.dumps({"generation_id": generation.record_id, "output_hash": output.digest, "output": str(destination)}, sort_keys=True))
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description="Creator-directed AI local-first framework")
     parser.add_argument("prompt", nargs="?")
     parser.add_argument("--domain", choices=("visual", "writing", "music", "voice"), default="writing")
     parser.add_argument("--backend", choices=("reference", "text"), default="reference")
     parser.add_argument("--model", default=None, help="Reserved for future custom-model support")
     parser.add_argument("--registry", default="models/registry.json", help="Path to local model registry")
-    args = parser.parse_args()
+    parser.add_argument("--workflow", action="store_true", help="Run a signed, policy-gated offline workflow")
+    parser.add_argument("--workspace", default=".creator-ai", help="Local immutable artifact store")
+    parser.add_argument("--key", default="creator-key.pem", help="Encrypted Ed25519 private-key file")
+    parser.add_argument("--passphrase", default="", help="Key passphrase; prefer supplying from a secure wrapper")
+    parser.add_argument("--creator-id", default="demo")
+    parser.add_argument("--creator-name", default="Demo creator")
+    parser.add_argument("--title", default="Untitled specification")
+    parser.add_argument("--constraints", default="{}", help="JSON object of domain constraints")
+    parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--output", default=None)
+    args = parser.parse_args(argv)
     if args.prompt == "validate-registry":
-        registry = ModelRegistry.load(args.registry)
-        policy = LicensePolicy()
-        rejected = 0
-        for model in registry.list():
-            for domain in model.domains:
-                decision = policy.evaluate(model, domain=domain)
-                print(f"{model.model_id} [{domain}]: {'allowed' if decision.allowed else 'denied'}")
-                for reason in decision.reasons:
-                    print(f"  - {reason}")
-                rejected += not decision.allowed
-        if rejected:
-            parser.exit(1, f"{rejected} registry policy check(s) denied\n")
+        if _registry(args.registry):
+            parser.exit(1, "registry policy checks denied\n")
         return
     if args.prompt == "provision-text":
         print(provision_text_model())
         return
     if not args.prompt:
         parser.error("a prompt, 'validate-registry', or 'provision-text' is required")
+    if args.workflow:
+        _workflow(args)
+        return
     manifest = CreatorManifest("demo", "Demo creator", args.domain, "demo-only")
     backend = ReferenceBackend() if args.backend == "reference" else TransformersTextBackend(args.model)
-    print(backend.generate(manifest, GenerationRequest(args.prompt)).content)
+    print(backend.generate(manifest, GenerationRequest(args.prompt, args.seed)).content)
 
 
 if __name__ == "__main__":
