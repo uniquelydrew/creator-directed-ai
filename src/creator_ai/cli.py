@@ -1,10 +1,11 @@
 """Command line demo, model provisioning and registry validation."""
 import argparse
-from .core import CreatorManifest, GenerationRequest
+
 from .backends import ReferenceBackend, TransformersTextBackend
+from .core import CreatorManifest, GenerationRequest
+from .licensing import LicensePolicy
 from .provision import provision_text_model
 from .registry import ModelRegistry
-from .licensing import LicensePolicy
 
 
 def main() -> None:

@@ -1,6 +1,7 @@
+import pytest
+
 from creator_ai.model_config import DEFAULT_TEXT_MODEL
 from creator_ai.provision import find_cached_text_model
-import pytest
 
 
 def test_model_is_pinned_and_license_recorded():

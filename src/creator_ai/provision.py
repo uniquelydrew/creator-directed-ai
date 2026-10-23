@@ -1,5 +1,4 @@
 """Explicit pretrained model provisioning and local cache checks."""
-from pathlib import Path
 from .model_config import DEFAULT_TEXT_MODEL
 
 

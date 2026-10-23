@@ -1,5 +1,6 @@
 """Deterministic metadata-based model usage policy, not legal advice."""
 from dataclasses import dataclass
+
 from .registry import ModelRecord
 
 

@@ -1,8 +1,8 @@
 """Offline model registry with explicit, auditable metadata."""
-from dataclasses import dataclass, field
 import json
-from pathlib import Path
 import re
+from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 _COMMIT = re.compile(r"^[0-9a-f]{40}$")

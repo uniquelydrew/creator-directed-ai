@@ -1,7 +1,9 @@
 import json
+
 import pytest
-from creator_ai.registry import ModelRecord, ModelRegistry, RegistryError
+
 from creator_ai.licensing import LicensePolicy
+from creator_ai.registry import ModelRecord, ModelRegistry, RegistryError
 
 MODEL = {
     "model_id": "example/model", "revision": "a" * 40, "license_id": "Apache-2.0",

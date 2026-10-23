@@ -1,6 +1,7 @@
 """Audited built-in text model reference (weights are external)."""
 from dataclasses import dataclass
 
+
 @dataclass(frozen=True)
 class DefaultTextModel:
     model_id: str = "HuggingFaceTB/SmolLM2-135M-Instruct"
