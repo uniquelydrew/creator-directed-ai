@@ -10,6 +10,86 @@
       "license_url": "https://huggingface.co/HuggingFaceTB/SmolLM2-135M-Instruct",
       "attribution": "HuggingFaceTB SmolLM2-135M-Instruct",
       "requires_consent": false
+    },
+    {
+      "model_id": "local/deterministic-v1",
+      "revision": "0000000000000000000000000000000000000000",
+      "license_id": "Apache-2.0",
+      "domains": ["writing"],
+      "source_url": "https://github.com/uniquelydrew/creator-directed-ai",
+      "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+      "attribution": "Creator Directed AI deterministic writing reference backend",
+      "requires_consent": false
+    },
+    {
+      "model_id": "local/deterministic-svg-v1",
+      "revision": "0000000000000000000000000000000000000000",
+      "license_id": "Apache-2.0",
+      "domains": ["visual"],
+      "source_url": "https://github.com/uniquelydrew/creator-directed-ai",
+      "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+      "attribution": "Creator Directed AI deterministic SVG reference backend",
+      "requires_consent": false
+    },
+    {
+      "model_id": "local/deterministic-midi-v1",
+      "revision": "0000000000000000000000000000000000000000",
+      "license_id": "Apache-2.0",
+      "domains": ["music"],
+      "source_url": "https://github.com/uniquelydrew/creator-directed-ai",
+      "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+      "attribution": "Creator Directed AI deterministic MIDI reference backend",
+      "requires_consent": false
+    },
+    {
+      "model_id": "local/deterministic-wav-v1",
+      "revision": "0000000000000000000000000000000000000000",
+      "license_id": "Apache-2.0",
+      "domains": ["voice"],
+      "source_url": "https://github.com/uniquelydrew/creator-directed-ai",
+      "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+      "attribution": "Creator Directed AI deterministic WAV reference backend",
+      "requires_consent": false
+    },
+    {
+      "model_id": "black-forest-labs/FLUX.1-schnell",
+      "revision": "741f7c3ce8b383c54771c7003378a50191e9efe9",
+      "license_id": "Apache-2.0",
+      "domains": ["visual"],
+      "source_url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell",
+      "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+      "attribution": "Black Forest Labs FLUX.1-schnell",
+      "adapter_id": "flux",
+      "runtime_version": "diffusers",
+      "hardware": "CUDA GPU recommended; model weights are not bundled",
+      "media_type": "image/png"
+    },
+    {
+      "model_id": "facebook/musicgen-small",
+      "revision": "4c8334b02c6ec4e8664a91979669a501ec497792",
+      "license_id": "CC-BY-NC-4.0",
+      "domains": ["music"],
+      "source_url": "https://huggingface.co/facebook/musicgen-small",
+      "license_url": "https://creativecommons.org/licenses/by-nc/4.0/",
+      "attribution": "Meta MusicGen small",
+      "adapter_id": "musicgen",
+      "runtime_version": "transformers",
+      "hardware": "CUDA GPU recommended; model weights are not bundled",
+      "media_type": "audio/wav"
+    },
+    {
+      "model_id": "orionai/openvoice-v2",
+      "revision": "c43041786c24bd18fb61f4ceb32dc98a6229aedc",
+      "license_id": "MIT",
+      "domains": ["voice"],
+      "source_url": "https://huggingface.co/orionai/openvoice-v2",
+      "license_url": "https://opensource.org/license/mit",
+      "attribution": "MyShell OpenVoice V2",
+      "adapter_id": "openvoice",
+      "runtime_version": "openvoice-v2",
+      "hardware": "CUDA GPU recommended; model weights and reference voices are not bundled",
+      "media_type": "audio/wav",
+      "requires_identity_consent": true
     }
   ]
 }
