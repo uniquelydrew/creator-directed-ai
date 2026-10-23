@@ -1,0 +1,3 @@
+# Deployment-owned isolated worker environment; no reference voice is bundled.
+openvoice-cli>=0.1
+torch>=2.2

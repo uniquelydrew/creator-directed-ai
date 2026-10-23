@@ -6,9 +6,8 @@ The local JSON registry (`models/registry.json`) records model identifiers, immu
 
 **Important limitation:** license identifiers are claims recorded in metadata, not cryptographic verification of licensing, training data rights, or legal permission. This release validates declared metadata and policy consistency **offline**; it does not fetch a live upstream model card, prove rights, validate model binaries, or supply evidence of consent. `consent_verified=True` must only be supplied after an independent authorization workflow. The default registry is an example record, not blanket approval for downstream use.
 
-## Follow-up work
+## Learned adapter records
 
-- Upstream license reconciliation with explicit provenance and recorded review dates
-- Revision-bound weight checksums and secure model acquisition
-- Signed creator authorization and revocation workflows
-- Integrating registry policy into all backend execution paths
+Learned records additionally declare an adapter identifier, runtime and hardware guidance, output media type, and whether identity-bearing creator consent is required. `creator-ai import-model --model MODEL --model-path DIRECTORY` creates a content-addressed manifest for files the user already downloaded; import never contacts a network. Generation rehashes the directory and refuses changed files.
+
+The shipped examples are FLUX.1-schnell (Apache-2.0), MusicGen small (CC-BY-NC-4.0), and OpenVoice V2 (MIT). MusicGen is deliberately denied by the default permissive-license policy. A deployment owner must explicitly configure a policy allowlist only after its own license review. Voice cloning requires a signed authorization that covers the exact reference asset.

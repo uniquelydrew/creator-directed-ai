@@ -35,6 +35,17 @@ creator-ai "Write a short opening paragraph" --domain writing --backend text
 
 The default model is **HuggingFaceTB/SmolLM2-135M-Instruct**, pinned to a specific upstream commit. Weights are not bundled. The explicit provisioning command downloads them once; generation uses the cached files only and never downloads implicitly.
 
+## Optional learned adapters
+
+Visual, music, and authorized voice-cloning adapters use isolated local worker processes. Download and install model runtimes separately, then import only an existing local model directory:
+
+```bash
+creator-ai import-model --model black-forest-labs/FLUX.1-schnell --model-path D:\models\flux --workspace .creator-ai
+creator-ai adapter-healthcheck --model black-forest-labs/FLUX.1-schnell --model-path D:\models\flux --provision PROVISION_HASH --workspace .creator-ai
+```
+
+Workers must implement the documented one-request JSON protocol and are passed with `--adapter-command`; they run with offline flags and cannot trigger provisioning. Learned runtimes may need a CUDA GPU. The portable Python 3.10–3.12 promise continues to apply to deterministic workflows. MusicGen is present for registry/protocol testing but is denied by the default license policy; OpenVoice requires a signed authorization covering the reference voice asset.
+
 See [model provisioning and licensing](docs/model-licensing.md) and [architecture](docs/architecture.md).
 See [platform support](docs/support.md), the [privacy and threat model](docs/privacy-threat-model.md), and [model registry](docs/model-registry.md).
 
