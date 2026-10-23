@@ -89,3 +89,21 @@ def test_svg_escapes_prompt_and_rejects_unsafe_palette():
     assert "&lt;script&gt;" in result.content
     with pytest.raises(ValueError, match="palette"):
         SvgBackend().generate(manifest, GenerationRequest("prompt", specification=CreativeSpecification("visual", "demo", {"palette": ["#000000", '" onload="alert(1)']})))
+
+
+def test_learned_music_is_denied_before_worker_or_provision_access(tmp_path):
+    identity, private, workspace = identity_and_workspace(tmp_path)
+    authorization_ref = workspace.store_authorization(create_authorization(identity, private, ("music",), ("generate",)))
+    specification = CreativeSpecification("music", "demo")
+    with pytest.raises(PermissionError, match="allowlist"):
+        workspace.generate(identity, authorization_ref.digest, specification, GenerationRequest("prompt", specification=specification), registry(),
+                           model_id="facebook/musicgen-small", model_path=tmp_path, provision_hash="not-read", adapter_command=("not-run",))
+
+
+def test_voice_cloning_requires_authorized_reference_asset(tmp_path):
+    identity, private, workspace = identity_and_workspace(tmp_path)
+    authorization_ref = workspace.store_authorization(create_authorization(identity, private, ("voice",), ("generate",)))
+    specification = CreativeSpecification("voice", "demo")
+    with pytest.raises(PermissionError, match="voice reference"):
+        workspace.generate(identity, authorization_ref.digest, specification, GenerationRequest("prompt", specification=specification), registry(),
+                           model_id="orionai/openvoice-v2", model_path=tmp_path, provision_hash="not-read", adapter_command=("not-run",))

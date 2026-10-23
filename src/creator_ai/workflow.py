@@ -6,6 +6,7 @@ from uuid import uuid4
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
+from .adapters import ModelProvision, ProcessAdapter, verify_model
 from .auth import authorization_allowed, revoke_authorization, sign, verify
 from .backends import deterministic_backend
 from .core import (
@@ -122,20 +123,43 @@ class CreatorWorkspace:
         self._state_pointer(identity.creator_id).write_text(json.dumps(state_ref.digest), encoding="utf-8")
         return revocation_ref
 
-    def generate(self, identity: CreatorIdentity, authorization_hash: str, specification: CreativeSpecification, request: GenerationRequest, registry: ModelRegistry) -> tuple[ArtifactRef, ArtifactRef]:
+    def generate(self, identity: CreatorIdentity, authorization_hash: str, specification: CreativeSpecification, request: GenerationRequest,
+                 registry: ModelRegistry, *, model_id: str | None = None, model_path: str | Path | None = None,
+                 provision_hash: str | None = None, adapter_command: tuple[str, ...] | None = None) -> tuple[ArtifactRef, ArtifactRef]:
         authorization = self._load_authorization(authorization_hash)
         authorization_allowed(authorization, identity, specification.domain, "generate", request.asset_hashes, self.revoked_ids(identity))
-        backend = deterministic_backend(specification.domain)
-        model = registry.get(backend.model_id)
-        decision = LicensePolicy().evaluate(model, domain=specification.domain, consent_verified=True)
+        if model_id is None:
+            backend = deterministic_backend(specification.domain)
+            model = registry.get(backend.model_id)
+            result = backend.generate(CreatorManifest(identity.creator_id, identity.display_name, specification.domain, "creator-authorized"), request)
+            manifest_hash = ""
+        else:
+            model = registry.get(model_id)
+            if not model.adapter_id or model_path is None or provision_hash is None or adapter_command is None:
+                raise ValueError("learned generation requires registered model, provision, path, and adapter command")
+            # Identity-bearing voice synthesis is allowed only when an explicitly
+            # authorized reference asset is part of this immutable request.
+            if model.requires_identity_consent and (specification.domain != "voice" or not request.asset_hashes):
+                raise PermissionError("voice cloning requires an authorized voice reference asset")
+            decision = LicensePolicy().evaluate(model, domain=specification.domain,
+                                                consent_verified=not model.requires_identity_consent or bool(request.asset_hashes))
+            if not decision.allowed:
+                raise PermissionError("; ".join(decision.reasons))
+            try:
+                provision = ModelProvision(**self.store.read_json(provision_hash))
+            except (TypeError, ValueError) as exc:
+                raise ValueError("invalid model provision artifact") from exc
+            verify_model(model, provision, model_path)
+            result = ProcessAdapter(adapter_command).generate(model, model_path, specification, request, authorization.asset_hashes)
+            manifest_hash = provision.manifest_hash
+        decision = LicensePolicy().evaluate(model, domain=specification.domain,
+                                            consent_verified=not model.requires_identity_consent or bool(request.asset_hashes))
         if not decision.allowed:
             raise PermissionError("; ".join(decision.reasons))
-        manifest = CreatorManifest(identity.creator_id, identity.display_name, specification.domain, "creator-authorized")
-        result = backend.generate(manifest, request)
         output = self.store.put_bytes(result.binary if result.binary is not None else result.content.encode(), result.media_type)
         request_ref = self.store.put_json(request.to_dict())
         spec_ref = self.store.put_json(specification.to_dict())
-        record = GenerationRecord(str(uuid4()), identity.creator_id, authorization.authorization_id, authorization_hash, specification.domain, result.backend, result.model_id, request_ref.digest, spec_ref.digest, output.digest, True, decision.reasons, request.seed, tuple(request.asset_hashes))
+        record = GenerationRecord(str(uuid4()), identity.creator_id, authorization.authorization_id, authorization_hash, specification.domain, result.backend, result.model_id, request_ref.digest, spec_ref.digest, output.digest, True, decision.reasons, request.seed, tuple(request.asset_hashes), manifest_hash, result.metadata.get("runtime_version", ""), result.metadata)
         return self.store.put_json(record.to_dict()), output
 
     def evaluate(self, generation_hash: str, accepted: bool, notes: str = "") -> ArtifactRef:
